@@ -7,20 +7,22 @@ const { version } = require('../package.json');
 const plantUmlTransformer = require('./plantUmlTransformer');
 const markdownTransformer = require('./markdownTransformer');
 const jsonSchemaTransformer = require('./jsonSchemaTransformer');
+const mermaidTransformer = require('./mermaidTransformer');
 const openApiGenerator = require('./index.js');
 
 program
   .version(version)
   .usage('[options] <inputfile>')
-  .description('At least 1 output type must be selected: plantuml or markdown!')
+  .description('At least 1 output type must be selected: jsonschema, markdown, mermaid, or plantuml!')
   .option('-d, --details', 'Show extra attribute details')
   .option('-p, --plantuml <plantuml file>', 'Transform to plantuml')
   .option('-m, --markdown <markdown file>', 'Transform to markdown')
+  .option('-e, --mermaid <mermaid file>', 'Transform to mermaid')
   .option('-j, --jsonschema <jsonschema file>', 'Transform to json schema')
   .option('-v, --verbose', 'Show verbose debug output')
   .parse(process.argv);
 
-if (!program.args.length || (program.plantuml == null && program.markdown == null && program.jsonschema == null)) {
+if (!program.args.length || (program.plantuml == null && program.markdown == null && program.mermaid == null && program.jsonschema == null)) {
   program.help();
 } else {
   const { verbose } = program;
@@ -44,6 +46,13 @@ if (!program.args.length || (program.plantuml == null && program.markdown == nul
       if (verbose) console.log('Writing markdown...');
       const md = markdownTransformer.generate(allParsedSchemas);
       fs.writeFileSync(program.markdown, md, 'utf8');
+    }
+
+    if (program.mermaid !== undefined) {
+      if (verbose) console.log('Writing mermaid...');
+      const includeDetails = (program.details !== undefined);
+      const mermaid = mermaidTransformer.generate(allParsedSchemas, allParsedResources, includeDetails);
+      fs.writeFileSync(program.mermaid, mermaid, 'utf8');
     }
 
     if (program.jsonschema !== undefined) {

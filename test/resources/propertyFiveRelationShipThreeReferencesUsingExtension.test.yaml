@@ -20,8 +20,6 @@ components:
       description: partner of owner
       type: object
       properties:
-        name: 
+        name:
           type: string
           description: name of the partner
-          
-      

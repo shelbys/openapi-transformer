@@ -75,8 +75,8 @@
     },
     "someDouble": {
       "type": "number",
-      "minimum": 15,
-      "maximum": 120
+      "minimum": 16,
+      "maximum": 130
     },
     "pipe": {
       "description": "Also a | here",
@@ -87,6 +87,13 @@
       "description": "the date and time the vehicle was created",
       "type": "string",
       "format": "date-time"
+    },
+    "userId": {
+      "description": "ID of user for this owner",
+      "type": "string"
+    },
+    "superOwner": {
+      "description": "ID of superuser for this owner"
     }
   },
   "required": [

@@ -104,9 +104,10 @@ function assertPropertyGender(property) {
   assert.equal(property.description, 'the gender of the owner');
   assert.equal(property.example, undefined);
 
-  assert.equal(property.details.length, 2);
-  assertDetail(property.details[0], 'enumvalue', 'male');
-  assertDetail(property.details[1], 'enumvalue', 'female');
+  assert.equal(property.details.length, 3);
+  assertDetail(property.details[0], 'default', 'female');
+  assertDetail(property.details[1], 'enumvalue', 'male');
+  assertDetail(property.details[2], 'enumvalue', 'female');
 }
 function assertPropertyFile1(property) {
   assert.equal(property.name, 'file1');
@@ -146,8 +147,8 @@ function assertPropertySomeDouble(property) {
 
   assert.equal(property.details.length, 3);
   assertDetail(property.details[0], 'format', 'double');
-  assertDetail(property.details[1], 'minimum', '15');
-  assertDetail(property.details[2], 'maximum', '120');
+  assertDetail(property.details[1], 'minimum', '16');
+  assertDetail(property.details[2], 'maximum', '130');
 }
 function assertPropertyPipe(property) {
   assert.equal(property.name, 'pipe');
@@ -171,8 +172,8 @@ describe('properties - parseProperties - no relationships - no references to oth
   assert.isDefined(arrayUnderTest);
   it('Reponse is array containing sub-arrays of which only first one contains data', () => {
     assert.equal(arrayUnderTest.length, 3);
-    assert.equal(arrayUnderTest[0].length, 13);
-    assert.equal(arrayUnderTest[1].length, 0);
+    assert.equal(arrayUnderTest[0].length, 15);
+    assert.equal(arrayUnderTest[1].length, 1);
     assert.equal(arrayUnderTest[2].length, 0);
   });
   it('Check property: name', () => {

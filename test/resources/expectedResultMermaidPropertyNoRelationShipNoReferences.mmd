@@ -1,0 +1,28 @@
+classDiagram
+  class owner{
+    <<Resource>>
+    +string[1..30] name*
+    +string~date~ from*
+    +string~date~ to
+    +integer[15..120] age*
+    +array~string, 1..5~ nicknames
+    +array~string, 2..2~ !aliases?><
+    +string[=female,male,female] gender
+    +string~binary~ file1
+    +string~byte~ file2
+    +integer shoeSize
+    +number~double~[16..130] someDouble
+    +string[PATTERN] pipe
+    +string~date-time~ creation
+    +string userId
+    +string[1..30] superOwner*
+    +GET__owners(name*,age) array~owner~
+  }
+  owner "0" o-- "*" User : userId
+  Owner "1" <-- "0..*" owner : 200 GET /owners
+
+  class User{
+    <<Resource>>
+    +GET__users__userId() string
+  }
+  User "1" <-- "1" string : 200 GET /users/{userId}

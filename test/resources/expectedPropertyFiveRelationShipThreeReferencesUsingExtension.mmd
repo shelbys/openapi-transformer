@@ -1,0 +1,37 @@
+classDiagram
+  class owner{
+    <<Schema>>
+    +child child
+    +array~partner|father|mother|child~ family
+  }
+  owner "0" <-- "0" child : child
+  owner "0" *-- "*" partner : family
+  owner "0" *-- "*" father : family
+  owner "0" *-- "*" mother : family
+  owner "0" *-- "*" child : family
+
+  class partner{
+    <<Schema>>
+    +string name
+  }
+
+  class child{
+    <<Schema>>
+    +string[..30] name*
+  }
+
+  class parent{
+    <<Schema>>
+    +string[..30] name*
+  }
+
+  class father{
+    <<Schema>>
+    +integer age
+  }
+  parent <|-- father : extends
+
+  class mother{
+    <<Schema>>
+  }
+  parent <|-- mother : extends

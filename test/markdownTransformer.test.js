@@ -48,13 +48,14 @@ function mockDoorsDetails() {
 
 function mockDoorsProperty() {
   const name = 'Doors';
-  const type = 'enum';
+  const type = 'string';
   const required = true;
+  const isEnum = true;
   const details = mockDoorsDetails();
   const description = 'Number of doors';
   const example = '1 door';
 
-  return new Property(name, type, [], null, [], required, false, details, description, example);
+  return new Property(name, type, [], null, [], required, isEnum, details, description, example);
 }
 function mockWheelsProperty() {
   const name = 'Wheels';

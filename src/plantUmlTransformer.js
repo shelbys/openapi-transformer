@@ -38,7 +38,7 @@ function generateRelationShips(relationShips) {
   }
   return uml;
 }
-function generateDetails(details, isEnum) {
+function generateDetails(details) {
   if (details.length === 0) return '';
   let first = true;
 
@@ -47,7 +47,7 @@ function generateDetails(details, isEnum) {
     if (!first) uml += constants.comma;
     first = false;
 
-    if (!isEnum) {
+    if (detail.name !== 'enumvalue') {
       uml += detail.name;
       uml += constants.colon;
     }
@@ -68,16 +68,11 @@ function generateProperty(property, generateExtraDetails) {
   }
 
   if (generateExtraDetails) {
-    if (property.isEnum) {
-      uml += generateDetails(property.details, true);
-    } else if (utils.resolveFormat(property.details) === 'date') {
-      uml += generateDetails(property.details, false);
+    uml += generateDetails(property.details);
+    if (utils.resolveFormat(property.details) === 'date') {
       uml += generateDetails([{ name: 'pattern', value: 'yyyy-MM-dd' }], false);
     } else if (utils.resolveFormat(property.details) === 'date-time') {
-      uml += generateDetails(property.details, false);
       uml += generateDetails([{ name: 'pattern', value: 'yyyy-MM-ddTHH:mm:ssZ' }], false);
-    } else {
-      uml += generateDetails(property.details, false);
     }
   }
   uml += constants.lineBreak;

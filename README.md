@@ -8,6 +8,7 @@
 
 This tool creates one or more of the following from a **Swagger 2** or **OpenApi 3** specification -
 * Markdown (Optimized for [Showdown](http://showdownjs.com))
+* [Mermaid Class Diagram](https://mermaid-js.github.io/mermaid/)
 * [PlantUML Class Diagram](http://plantuml.com/class-diagram)
 
 # Requirements
@@ -21,9 +22,10 @@ Usage: index [options] <inputfile>
 
 Options:
   -V, --version                       Output the version number
-  -p, --plantuml <plantuml file>      The plantuml file
-  -m, --markdown <markdown file>      The output file for markdown
-  -j, --jsonschema <jsonschema file>  Transform to json schema
+  -c, --mermaid <mermaid file>        The output mermaid file
+  -p, --plantuml <plantuml file>      The output plantuml file
+  -m, --markdown <markdown file>      The output markdown file
+  -j, --jsonschema <jsonschema file>  The output json schema file
   -v, --verbose                       Show verbose debug output
   -h, --help                          Output usage information
 ```
@@ -52,4 +54,5 @@ openapi-transformer vehicle.yaml --plantuml ./example.plantuml --markdown ./exam
 
 # Online utils
 - [Online Markdown Editor http://demo.showdownjs.com](http://demo.showdownjs.com)
+- [Online Mermaid Editor https://mermaid-js.github.io/mermaid-live-editor](https://mermaid-js.github.io/mermaid-live-editor)
 - [Online PlantUML Editor https://www.planttext.com](https://www.planttext.com)

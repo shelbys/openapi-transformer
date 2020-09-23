@@ -3,7 +3,9 @@ const utils = require('./utils');
 function generateEnum(details) {
   const array = [];
   details.forEach((detail) => {
-    array.push(detail.value);
+    if (detail.name === 'enumvalue') {
+      array.push(detail.value);
+    }
   });
   return array;
 }

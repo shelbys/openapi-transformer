@@ -26,7 +26,7 @@ describe('openApiGenerator - loadYamlFile - HTTP - 404', () => {
       fail();
     } catch (error) {
       assert.isDefined(error);
-      assert.equal(error, 'Error: getaddrinfo ENOTFOUND www.doesnotexist www.doesnotexist:80');
+      assert.equal(error, 'Error: getaddrinfo ENOTFOUND www.doesnotexist');
     }
   });
 });

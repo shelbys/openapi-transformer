@@ -25,24 +25,26 @@ class Property {
     let typeAfterDetailsParsing;
     let isEnum;
 
-    if (property.default !== undefined) details.push(new Detail('default', property.default));
+    if (property.default || property.defaultValue !== undefined) {
+      details.push(new Detail('default', property.default || property.defaultValue));
+    }
     if (property.deprecated !== undefined) details.push(new Detail('deprecated', property.deprecated));
     if (property.format !== undefined) details.push(new Detail('format', property.format));
     if (property.nullable !== undefined) details.push(new Detail('nullable', property.nullable));
     if (property.readOnly !== undefined) details.push(new Detail('readOnly', property.readOnly));
     if (property.writeOnly !== undefined) details.push(new Detail('writeOnly', property.writeOnly));
 
+    if (property.enum !== undefined) {
+      isEnum = true;
+      for (const value of property.enum) {
+        details.push(new Detail('enumvalue', value));
+      }
+    }
+
     if (property.type === 'string') {
       if (property.minLength !== undefined) details.push(new Detail('minLength', property.minLength));
       if (property.maxLength !== undefined) details.push(new Detail('maxLength', property.maxLength));
       if (property.pattern !== undefined) details.push(new Detail('pattern', property.pattern));
-
-      if (property.enum !== undefined) {
-        isEnum = true;
-        for (const value of property.enum) {
-          details.push(new Detail('enumvalue', value));
-        }
-      }
     } else if (property.type === 'number' || property.type === 'integer') {
       if (property.minimum !== undefined) details.push(new Detail('minimum', property.minimum));
       if (property.maximum !== undefined) details.push(new Detail('maximum', property.maximum));
