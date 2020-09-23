@@ -10,7 +10,7 @@
       "description": "family of the owner",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/partner/father/mother/child"
+        "$ref": "#/definitions/partner|father|mother|child"
       }
     }
   },

@@ -33,7 +33,7 @@
       "description": "the nicknames of the owner",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/strings"
+        "type": "string"
       },
       "minItems": 1,
       "maxItems": 5,
@@ -62,11 +62,13 @@
       ]
     },
     "file1": {
-      "type": "string [binary]"
+      "type": "string",
+      "format": "binary"
     },
     "file2": {
       "description": "the second file",
-      "type": "string"
+      "type": "string",
+      "format": "byte"
     },
     "shoeSize": {
       "type": "integer"
@@ -83,7 +85,8 @@
     },
     "creation": {
       "description": "the date and time the vehicle was created",
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

@@ -1,3 +1,4 @@
+const utils = require('./utils');
 
 function generateEnum(details) {
   const array = [];
@@ -14,8 +15,8 @@ function generateProperty(property, listOfUsedSchemas) {
   if (property.description) {
     js.description = property.description;
   }
-  if (property.type === 'enum') {
-    js.type = 'string';
+  if (property.isEnum) {
+    js.type = property.type;
     js.enum = generateEnum(property.details);
     processDetails = false;
   } else if (property.type === 'number') {
@@ -28,17 +29,19 @@ function generateProperty(property, listOfUsedSchemas) {
       });
       processDetails = false;
     }
-  } else if (property.type === 'string [byte]') {
-    js.type = 'string';
-  } else if (property.type === 'date') {
+  } else if (utils.resolveFormat(property.details) === 'date') {
     js.type = 'string';
     js.format = 'date';
     js.pattern = '^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$';
     processDetails = false;
-  } else if (property.type.indexOf('array[] of ') > -1) {
+  } else if (property.type === 'array') {
     js.type = 'array';
     js.items = {};
-    js.items.$ref = `#/definitions/${property.type.slice('11')}`;
+    if (['array', 'boolean', 'null', 'number', 'object', 'string'].includes(property.itemType)) {
+      js.items.type = property.itemType;
+    } else {
+      js.items.$ref = `#/definitions/${property.itemType}`;
+    }
   } else {
     const { type } = property;
     if (type && listOfUsedSchemas.includes(type)) {

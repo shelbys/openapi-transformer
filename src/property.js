@@ -7,10 +7,14 @@ const Detail = require('./detail');
 const RelationShip = require('./relationship');
 
 class Property {
-  constructor(name, type, required, details, description, example) {
+  constructor(name, type, typeRefs, itemType, itemTypeRefs, required, isEnum, details, description, example) {
     this.name = name;
     this.type = type;
+    this.typeRefs = typeRefs;
+    this.itemType = itemType;
+    this.itemTypeRefs = itemTypeRefs;
     this.required = required;
+    this.isEnum = isEnum;
     this.details = details;
     this.description = description;
     this.example = example;
@@ -19,6 +23,14 @@ class Property {
   static parseDetails(property) {
     const details = [];
     let typeAfterDetailsParsing;
+    let isEnum;
+
+    if (property.default !== undefined) details.push(new Detail('default', property.default));
+    if (property.deprecated !== undefined) details.push(new Detail('deprecated', property.deprecated));
+    if (property.format !== undefined) details.push(new Detail('format', property.format));
+    if (property.nullable !== undefined) details.push(new Detail('nullable', property.nullable));
+    if (property.readOnly !== undefined) details.push(new Detail('readOnly', property.readOnly));
+    if (property.writeOnly !== undefined) details.push(new Detail('writeOnly', property.writeOnly));
 
     if (property.type === 'string') {
       if (property.minLength !== undefined) details.push(new Detail('minLength', property.minLength));
@@ -26,22 +38,12 @@ class Property {
       if (property.pattern !== undefined) details.push(new Detail('pattern', property.pattern));
 
       if (property.enum !== undefined) {
-        typeAfterDetailsParsing = 'enum';
-
-        property.enum.forEach((value) => {
+        isEnum = true;
+        for (const value of property.enum) {
           details.push(new Detail('enumvalue', value));
-        });
-      } else if (property.format === 'date') {
-        typeAfterDetailsParsing = 'date';
-      } else if (property.format === 'date-time') {
-        typeAfterDetailsParsing = 'date-time';
-      } else if (property.format === 'binary') {
-        typeAfterDetailsParsing = 'string [binary]';
-      } else if (property.format === 'byte') {
-        typeAfterDetailsParsing = 'string [byte]';
+        }
       }
     } else if (property.type === 'number' || property.type === 'integer') {
-      if (property.format !== undefined) details.push(new Detail('format', property.format));
       if (property.minimum !== undefined) details.push(new Detail('minimum', property.minimum));
       if (property.maximum !== undefined) details.push(new Detail('maximum', property.maximum));
       if (property.multipleOf !== undefined) details.push(new Detail('multipleOf', property.multipleOf));
@@ -51,92 +53,114 @@ class Property {
       if (property.uniqueItems !== undefined) details.push(new Detail('uniqueItems', property.uniqueItems));
     }
 
-    return [typeAfterDetailsParsing, details];
+    return [typeAfterDetailsParsing, details, isEnum];
   }
 
-  static parseProperties(properties, required, schemaName, verbose) {
-    const parsedProperties = [];
-
+  static parseProperty(name, property, required, schemaName, verbose) {
     const relationShips = [];
     const referencedFiles = [];
 
-    for (const propertyIndex in properties) {
-      const property = properties[propertyIndex];
+    const isRequired = (required || []).includes(name);
+    const fromCard = isRequired ? '1' : '0';
+    let toCard = '';
+    if (property.minItems != null || property.maxItems != null) {
+      if (property.minItems === property.maxItems) {
+        toCard = `${property.minItems}`;
+      } else {
+        toCard = `${property.minItems || ''}..${property.maxItems || '*'}`;
+      }
+    } else {
+      toCard = '*';
+    }
+    let { type } = property;
+    const typeRefs = [];
+    let itemType = (property.items || {}).type || '';
+    const itemTypeRefs = [];
+    const { description } = property;
+    const { example } = property;
+    if (verbose) console.log(`***************** processing property :: [${name}] of type ::  [${type}]`);
 
-      const name = propertyIndex;
-      let { type } = property;
-      const { description } = property;
-      const { example } = property;
-      if (verbose) console.log(`***************** processing property :: [${name}] of type ::  [${type}]`);
+    if (type == null && (property.$ref != null || property.allOf != null || property.anyOf != null || property.oneOf != null)) {
+      // reference to other object, maybe in other file
+      for (const ref of property.allOf || property.anyOf || property.oneOf || [property]) {
+        const reference = ref.$ref;
+        if (reference) {
+          typeRefs.push(reference);
+          utils.processReference(reference, referencedFiles, verbose);
 
-      if (type == null && property.$ref != null) {
-        // reference to other object, maybe in other file
-        const reference = property.$ref;
-        const referencedFile = reference.match('^.*yaml');
-
-        if (referencedFile != null && referencedFile.length === 1 && !referencedFiles.includes(referencedFile[0])) {
-          referencedFiles.push(referencedFile[0]);
+          if (!reference.match(/\/properties\//)) {
+            const to = utils.lastToken(reference, '/');
+            type = to;
+            relationShips.push(new RelationShip(schemaName, to, name, constants.RELATIONSHIP_USE, fromCard, fromCard));
+          }
         }
-        const to = utils.lastToken(reference, '/');
-        type = to;
-        relationShips.push(new RelationShip(schemaName, to, name, constants.RELATIONSHIP_USE));
-      } else if (type === 'array') {
-        type = 'array[] of ';
-        let first = true;
+      }
+    } else if (type === 'array') {
+      type = 'array';
+      let first = true;
 
-        for (const itemIndex in property.items) {
-          const item = property.items[itemIndex];
-
-          if (itemIndex === 'type') {
-            // process array of primitives
-            type += `${item}s`;
-          } else if (itemIndex === '$ref') {
-            // process array of specific schema
-            if (typeof item === 'string') {
+      for (const [itemKey, item] of Object.entries(property.items || {})) {
+        if (itemKey === '$ref' || itemKey === 'allOf' || itemKey === 'anyOf' || itemKey === 'oneOf') {
+          // process array of specific schema
+          let refs = item;
+          if (typeof refs === 'string') {
+            refs = [{ $ref: refs }];
+          }
+          for (const ref of (refs || [])) {
+            const reference = ref.$ref;
+            if (typeof reference === 'string') {
+              itemTypeRefs.push(reference);
               // add relationShip
-              const objectName = utils.lastToken(item, '/');
-              relationShips.push(new RelationShip(schemaName, objectName, name, constants.RELATIONSHIP_AGGREGATION));
-
-              type += objectName;
-
-              // is it a reference to an external file?
-              const referencedFile = item.match('^.*yaml');
-              if (referencedFile != null && referencedFile.length === 1 && !referencedFiles.includes(referencedFile[0])) {
-                referencedFiles.push(referencedFile[0]);
-              }
-            }
-          } else if (itemIndex === 'anyOf') { // typeof item === 'object') {
-            // process anyOf / allOf / oneOf item
-            for (const refIndex in item) {
-              const reference = item[refIndex].$ref;
-
               const objectName = utils.lastToken(reference, '/');
-              relationShips.push(new RelationShip(schemaName, objectName, name, constants.RELATIONSHIP_AGGREGATION));
+              relationShips.push(new RelationShip(schemaName, objectName, name, constants.RELATIONSHIP_COMPOSITION, fromCard, toCard));
 
               if (!first) {
-                type += '/';
+                itemType += '|';
               }
               first = false;
 
-              type += objectName;
+              itemType += objectName;
 
-              const referencedFile = reference.match('^.*yaml');
-              if (referencedFile != null && referencedFile.length === 1 && !referencedFiles.includes(referencedFile[0])) {
-                referencedFiles.push(referencedFile[0]);
-              }
+              // is it a reference to an external file?
+              utils.processReference(reference, referencedFiles, verbose);
             }
           }
         }
       }
-
-      const [typeAfterDetailsParsing, details] = this.parseDetails(property);
-
-      if (typeAfterDetailsParsing !== undefined) type = typeAfterDetailsParsing;
-      const requiredProperty = (required === undefined ? undefined : required.includes(name));
-
-      parsedProperties.push(new Property(name, type, requiredProperty, details, description, example));
     }
-    return [parsedProperties, relationShips, referencedFiles];
+
+    if (name) {
+      const pkMatch = name.match(/^(.*)(Id|Ids|Key|Keys)$/);
+      if (pkMatch) {
+        const foreignName = pkMatch[1].charAt(0).toUpperCase() + pkMatch[1].substr(1);
+        if (foreignName !== schemaName) {
+          relationShips.push(new RelationShip(schemaName, foreignName, name, constants.RELATIONSHIP_AGGREGATION, fromCard, toCard));
+        }
+      }
+    }
+
+    const [typeAfterDetailsParsing, details, isEnum] = this.parseDetails(property);
+
+    if (typeAfterDetailsParsing !== undefined) itemType = typeAfterDetailsParsing;
+    const requiredProperty = (required === undefined ? undefined : isRequired);
+
+    return [new Property(name, type, typeRefs, itemType, itemTypeRefs, requiredProperty, isEnum, details, description, example), relationShips, referencedFiles];
+  }
+
+  static parseProperties(properties, required, schemaName, verbose) {
+    const parsedProperties = [];
+    const allRelationShips = [];
+    const allReferencedFiles = [];
+
+    for (const [name, property] of Object.entries(properties || {})) {
+      const [parsedProperty, relationShips, referencedFiles] = this.parseProperty(name, property, required, schemaName, verbose);
+      parsedProperties.push(parsedProperty);
+
+      utils.addValuesOfArrayToOtherArrayIfNotExist(relationShips, allRelationShips);
+      utils.addValuesOfArrayToOtherArrayIfNotExist(referencedFiles, allReferencedFiles);
+    }
+
+    return [parsedProperties, allRelationShips, allReferencedFiles];
   }
 }
 

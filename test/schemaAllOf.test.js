@@ -86,6 +86,7 @@ describe('schemas - parseSchemas - test inheritence', () => {
     assert.equal(schema.description, 'Child information');
     assert.equal(schema.properties.length, mockedProperties.length);
     assert.equal(schema.relationShips.length, 0);
-    assert.equal(schema.parent, 'child');
+    assert.equal(schema.parents.length, 1);
+    assert.equal(schema.parents[0], 'child');
   });
 });

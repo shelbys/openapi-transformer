@@ -38,9 +38,42 @@ function mergeObjects(sourceObject, targetObject) {
   });
 }
 
+function processReference(reference, allReferencedFiles, verbose) {
+  if (reference) {
+    if (verbose) console.log(`***************** found ref :: ${reference}`);
+
+    const referencedFile = reference.match('^.*ya?ml');
+    if (referencedFile != null && referencedFile.length === 1 && !allReferencedFiles.includes(referencedFile[0])) {
+      if (verbose) console.log(`**************** matched schema $ref [${referencedFile}]`);
+      allReferencedFiles.push(referencedFile[0]);
+    }
+  }
+}
+
+function processReferences(references, allReferencedFiles, verbose) {
+  if (references && references.length > 0) {
+    for (const reference of references) {
+      this.processReference(reference, allReferencedFiles, verbose);
+    }
+  }
+}
+
+function resolveFormat(details) {
+  let format;
+  details.forEach((detail) => {
+    if (detail.name === 'format') {
+      format = detail.value;
+    }
+  });
+  return format;
+}
+
 module.exports = {
   lastToken,
   addValueToArrayIfNotExists,
   addValuesOfArrayToOtherArrayIfNotExist,
   mergeObjects,
+  processReference,
+  processReferences,
+  resolveFormat,
 };

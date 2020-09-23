@@ -2,14 +2,14 @@
 
 class owner {
   child  : child
-  family  : array[] of partner/father/mother/child
+  family  : array<partner|father|mother|child>
 
 }
 owner -- child  :  child
-owner *-- partner  :  family
-owner *-- father  :  family
-owner *-- mother  :  family
-owner *-- child  :  family
+owner 0-- partner  :  family
+owner 0-- father  :  family
+owner 0-- mother  :  family
+owner 0-- child  :  family
 
 class partner {
   name  : string

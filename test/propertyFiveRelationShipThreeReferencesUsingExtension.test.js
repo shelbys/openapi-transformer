@@ -44,7 +44,8 @@ describe('properties - parseProperties - two relationships - one references to o
   it('Check property: family', () => {
     const property = arrayUnderTest[0][1];
     assert.equal(property.name, 'family');
-    assert.equal(property.type, 'array[] of partner/father/mother/child');
+    assert.equal(property.type, 'array');
+    assert.equal(property.itemType, 'partner|father|mother|child');
     assert.equal(property.required, undefined);
     assert.equal(property.description, 'family of the owner');
     assert.equal(property.example, undefined);
@@ -58,23 +59,23 @@ describe('properties - parseProperties - two relationships - one references to o
   it('Check relationship: partner', () => {
     // const relationShip = arrayUnderTest[1][1];
     // assert.equal(relationShip, ' *-- partner : family');
-    assertRelationShip(arrayUnderTest[1][1], 'owner', 'partner', 'family', 'aggregation');
+    assertRelationShip(arrayUnderTest[1][1], 'owner', 'partner', 'family', 'composition');
   });
 
   it('Check relationship: father', () => {
     // const relationShip = arrayUnderTest[1][2];
     // assert.equal(relationShip, ' *-- father : family');
-    assertRelationShip(arrayUnderTest[1][2], 'owner', 'father', 'family', 'aggregation');
+    assertRelationShip(arrayUnderTest[1][2], 'owner', 'father', 'family', 'composition');
   });
   it('Check relationship: mother', () => {
     // const relationShip = arrayUnderTest[1][3];
     // assert.equal(relationShip, ' *-- mother : family');
-    assertRelationShip(arrayUnderTest[1][3], 'owner', 'mother', 'family', 'aggregation');
+    assertRelationShip(arrayUnderTest[1][3], 'owner', 'mother', 'family', 'composition');
   });
   it('Check relationship: child', () => {
     // const relationShip = arrayUnderTest[1][4];
     // assert.equal(relationShip, ' *-- child : family');
-    assertRelationShip(arrayUnderTest[1][4], 'owner', 'child', 'family', 'aggregation');
+    assertRelationShip(arrayUnderTest[1][4], 'owner', 'child', 'family', 'composition');
   });
 
   it('Check external file: child', () => {

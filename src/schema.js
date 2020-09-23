@@ -7,47 +7,42 @@ const Property = require('./property');
 const utils = require('./utils');
 
 class Schema {
-  constructor(title, name, properties, description, relationShips, parent) {
+  constructor(title, name, properties, description, relationShips, parents) {
     this.title = title;
     this.name = name;
     this.properties = properties;
     this.description = description;
     this.relationShips = relationShips;
-    this.parent = parent;
+    this.parents = parents;
   }
 
   static parseSchemas(schemas, verbose) {
     const allReferencedFiles = [];
     const allParsedSchemas = {};
 
-    for (const schemaIndex in schemas) {
-      const schema = schemas[schemaIndex];
-
-      const { title } = schema;
-      const parent = undefined;
+    for (const [name, schema] of Object.entries(schemas)) {
+      let { title } = schema;
+      if (!title) {
+        title = name;
+      }
+      const parents = [];
       const { description } = schema;
 
-      if (verbose) console.log(`\n\n############################### schema name :: ${title} ###############################`);
+      if (verbose) console.log(`\n\n############################### schema name :: ${title || name} ###############################`);
 
-      if (schema.$ref !== undefined) {
-        if (verbose) console.log(`***************** found ref :: ${schema.$ref}`);
-
-        const reference = schema.$ref;
-        const referencedFile = reference.match('^.*ya?ml');
-        if (referencedFile != null && referencedFile.length === 1 && !allReferencedFiles.includes(referencedFile[0])) {
-          if (verbose) console.log(`**************** matched schema $ref [${referencedFile}]`);
-          allReferencedFiles.push(referencedFile[0]);
-        }
+      const reference = schema.$ref || (schema.items || {}).$ref;
+      if (reference) {
+        utils.processReferences([reference], allReferencedFiles, verbose);
       } else if (schema.allOf !== undefined) {
-        const [referencedFiles, parsedSchemas] = this.processInheritance(schema, schemaIndex, schema.allOf, verbose);
+        const [referencedFiles, parsedSchemas] = this.processInheritance(schema, name, schema.allOf, verbose);
 
         utils.mergeObjects(parsedSchemas, allParsedSchemas);
         utils.addValuesOfArrayToOtherArrayIfNotExist(referencedFiles, allReferencedFiles);
       } else if (schema.type === 'object' || schema.properties !== undefined) {
         // parse properties of this schema
-        const [parsedProperties, relationShips, referencedFiles] = Property.parseProperties(schema.properties, schema.required, schemaIndex, verbose);
-        if (allParsedSchemas[schemaIndex] === undefined) {
-          allParsedSchemas[schemaIndex] = new Schema(title, schemaIndex, parsedProperties, description, relationShips, parent);
+        const [parsedProperties, relationShips, referencedFiles] = Property.parseProperties(schema.properties, schema.required, name, verbose);
+        if (allParsedSchemas[name] === undefined) {
+          allParsedSchemas[name] = new Schema(title, name, parsedProperties, description, relationShips, parents);
 
           utils.addValuesOfArrayToOtherArrayIfNotExist(referencedFiles, allReferencedFiles);
         }
@@ -56,10 +51,10 @@ class Schema {
     return [allReferencedFiles, allParsedSchemas];
   }
 
-  static processInheritance(schema, schemaIndex, allOf, verbose) {
-    if (verbose) console.log(`***************** schemaIndex :: ${schemaIndex}`);
+  static processInheritance(schema, name, allOf, verbose) {
+    if (verbose) console.log(`***************** name :: ${name}`);
     const parsedSchemas = {};
-    let parent;
+    const parents = [];
     const allReferencedFiles = [];
     const { description } = schema;
 
@@ -69,29 +64,27 @@ class Schema {
     let relationShips;
     let referencedFiles;
 
-    for (const attributeIndex in allOf) {
-      const attribute = allOf[attributeIndex];
-
+    for (const attribute of allOf) {
       if (verbose) console.log('********************************************************************');
       if (verbose) console.log(`***************** attribute: ${util.inspect(attribute, { showHidden: false, depth: null })}`);
 
-      if (attribute.$ref !== undefined) {
-        parent = utils.lastToken(attribute.$ref, '/');
-        if (verbose) console.log(`***************** parent :: ${parent}`);
+      if (attribute.$ref) {
+        parents.push(utils.lastToken(attribute.$ref, '/'));
+        if (verbose) console.log(`***************** parents :: ${parents}`);
       }
 
       if (attribute.type !== undefined && attribute.type === 'object' && attribute.properties !== undefined) {
         if (verbose) console.log(`***************** type :: ${attribute.type}`);
         if (verbose) console.log(`***************** type.properties :: ${attribute.properties}`);
 
-        [parsedProperties, relationShips, referencedFiles] = Property.parseProperties(attribute.properties, attribute.required, schemaIndex, verbose);
+        [parsedProperties, relationShips, referencedFiles] = Property.parseProperties(attribute.properties, attribute.required, name, verbose);
         utils.addValuesOfArrayToOtherArrayIfNotExist(referencedFiles, allReferencedFiles);
       }
     }
-    if (parsedSchemas[schemaIndex] === undefined) {
-      if (verbose) console.log(`***************** creating schema :: ${schemaIndex}`);
+    if (parsedSchemas[name] === undefined) {
+      if (verbose) console.log(`***************** creating schema :: ${name}`);
 
-      parsedSchemas[schemaIndex] = new Schema(schema.title, schemaIndex, parsedProperties, description, relationShips, parent);
+      parsedSchemas[name] = new Schema(schema.title, name, parsedProperties, description, relationShips, parents);
     }
 
     return [allReferencedFiles, parsedSchemas];

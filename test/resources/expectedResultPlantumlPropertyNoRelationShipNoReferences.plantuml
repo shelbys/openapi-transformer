@@ -2,18 +2,18 @@
 
 class owner {
   name * : string[minLength : 1, maxLength : 30]
-  from * : date[pattern : yyyy-MM-dd]
-  to  : date[pattern : yyyy-MM-dd]
+  from * : string[format : date][pattern : yyyy-MM-dd]
+  to  : string[format : date][pattern : yyyy-MM-dd]
   age * : integer[minimum : 15, maximum : 120, multipleOf : 1]
   nicknames  : array<string>[minItems : 1, maxItems : 5, uniqueItems : true]
   aliases  : array<string>[deprecated : true, nullable : true, readOnly : true, writeOnly : true, minItems : 2, maxItems : 2, uniqueItems : true]
-  gender  : enum[male, female]
-  file1  : string [binary]
-  file2  : string [byte]
+  gender  : string[male, female]
+  file1  : string[format : binary]
+  file2  : string[format : byte]
   shoeSize  : integer
   someDouble  : number[format : double, minimum : 15, maximum : 120]
   {field} pipe  : string[pattern : ^(nl|NL|Nederland)$]
-  creation  : date-time[pattern : yyyy-MM-ddTHH:mm:ssZ]
+  creation  : string[format : date-time][pattern : yyyy-MM-ddTHH:mm:ssZ]
 
 }
 @enduml

@@ -9,13 +9,14 @@
       "airbnb-base",
       "plugin:promise/recommended"
     ],
-      "plugins": [
+    "plugins": [
       "promise"
     ],
-      "rules": {
+    "rules": {
         "max-len":"off",
         "no-console":"warn",
         "class-methods-use-this":"off",
-        "import/no-extraneous-dependencies": ["error", {"devDependencies": true}]
+        "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
+        "no-restricted-syntax": 0
     }
   }

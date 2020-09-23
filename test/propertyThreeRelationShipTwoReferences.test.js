@@ -53,7 +53,8 @@ describe('properties - parseProperties - two relationships - one references to o
   it('Check property: children', () => {
     const property = arrayUnderTest[0][2];
     assert.equal(property.name, 'children');
-    assert.equal(property.type, 'array[] of child');
+    assert.equal(property.type, 'array');
+    assert.equal(property.itemType, 'child');
     assert.equal(property.required, false);
     assert.equal(property.description, 'children of the owner');
     assert.equal(property.example, undefined);
@@ -63,7 +64,8 @@ describe('properties - parseProperties - two relationships - one references to o
   it('Check property: parents', () => {
     const property = arrayUnderTest[0][3];
     assert.equal(property.name, 'parents');
-    assert.equal(property.type, 'array[] of parent');
+    assert.equal(property.type, 'array');
+    assert.equal(property.itemType, 'parent');
     assert.equal(property.description, 'parents of the owner');
     assert.equal(property.example, undefined);
 
@@ -74,11 +76,11 @@ describe('properties - parseProperties - two relationships - one references to o
   });
 
   it('Check relationship: children', () => {
-    assertRelationShip(arrayUnderTest[1][1], 'owner', 'child', 'children', 'aggregation');
+    assertRelationShip(arrayUnderTest[1][1], 'owner', 'child', 'children', 'composition');
   });
 
   it('Check relationship: parents', () => {
-    assertRelationShip(arrayUnderTest[1][2], 'owner', 'parent', 'parents', 'aggregation');
+    assertRelationShip(arrayUnderTest[1][2], 'owner', 'parent', 'parents', 'composition');
   });
   it('Check external file: child', () => {
     const file = arrayUnderTest[2][0];

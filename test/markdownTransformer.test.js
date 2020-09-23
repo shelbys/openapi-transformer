@@ -11,9 +11,9 @@ function mockCar() {
   const properties = [];
   const description = 'A car is a transport thingy';
   const relationShips = [];
-  const parent = 'Vehicle';
+  const parents = ['Vehicle'];
 
-  return new Schema(title, name, properties, description, relationShips, parent);
+  return new Schema(title, name, properties, description, relationShips, parents);
 }
 
 function mockBrandDetails() {
@@ -31,7 +31,7 @@ function mockBrandProperty() {
   const description = 'The brand of the vehicle';
   const example = 'Volvo';
 
-  const property = new Property(name, type, required, details, description, example);
+  const property = new Property(name, type, [], null, [], required, false, details, description, example);
 
   return property;
 }
@@ -54,7 +54,7 @@ function mockDoorsProperty() {
   const description = 'Number of doors';
   const example = '1 door';
 
-  return new Property(name, type, required, details, description, example);
+  return new Property(name, type, [], null, [], required, false, details, description, example);
 }
 function mockWheelsProperty() {
   const name = 'Wheels';
@@ -64,7 +64,7 @@ function mockWheelsProperty() {
   const description = undefined;
   const example = undefined;
 
-  return new Property(name, type, required, details, description, example);
+  return new Property(name, type, [], null, [], required, false, details, description, example);
 }
 
 function mockPipeProperty() {
@@ -75,7 +75,7 @@ function mockPipeProperty() {
   const description = 'Since markdown uses the pipe character "|" for table seperation, it needs to be escaped';
   const example = 'Also the | here.';
 
-  return new Property(name, type, required, details, description, example);
+  return new Property(name, type, [], null, [], required, false, details, description, example);
 }
 
 function mockVehicleSchema() {
@@ -84,8 +84,8 @@ function mockVehicleSchema() {
   const properties = [mockBrandProperty(), mockPipeProperty(), mockDoorsProperty(), mockWheelsProperty()];
   const description = 'A Vehicle is a transport thingy. The pipe escaping is tested here |';
   const relationShips = [];
-  const parent = '';
-  return new Schema(title, name, properties, description, relationShips, parent);
+  const parents = [];
+  return new Schema(title, name, properties, description, relationShips, parents);
 }
 
 function mockVehicleWithTableInDescriptionSchema() {
@@ -94,8 +94,8 @@ function mockVehicleWithTableInDescriptionSchema() {
   const properties = [mockBrandProperty(), mockPipeProperty(), mockDoorsProperty(), mockWheelsProperty()];
   const description = 'A Vehicle is a transport thingy. \n|col1|col2|\n|--|--|\n|value1|value2|\n|value3|value4|\nNice table';
   const relationShips = [];
-  const parent = '';
-  return new Schema(title, name, properties, description, relationShips, parent);
+  const parents = [];
+  return new Schema(title, name, properties, description, relationShips, parents);
 }
 
 function mockBike() {
@@ -104,8 +104,8 @@ function mockBike() {
   const properties = undefined;
   const description = undefined;
   const relationShips = undefined;
-  const parent = '';
-  return new Schema(title, name, properties, description, relationShips, parent);
+  const parents = [];
+  return new Schema(title, name, properties, description, relationShips, parents);
 }
 
 function mockOneClassNoProperties() {

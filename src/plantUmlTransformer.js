@@ -1,8 +1,9 @@
 const { constants } = require('./constants');
+const utils = require('./utils');
 
-function generateParent(schemaName, parent) {
+function generateParents(schemaName, parents) {
   let uml = '';
-  if (parent !== undefined) {
+  for (const parent of (parents || [])) {
     uml += parent;
     uml += ' <|-- ';
     uml += schemaName;
@@ -18,6 +19,8 @@ function generateRelationShips(relationShips) {
 
       if (relationShip.type === constants.RELATIONSHIP_AGGREGATION) {
         uml += ' *-- ';
+      } else if (relationShip.type === constants.RELATIONSHIP_COMPOSITION) {
+        uml += ' 0-- ';
       } else if (relationShip.type === constants.RELATIONSHIP_EXTENSION) {
         uml += ' *<|- ';
       } else if (relationShip.type === constants.RELATIONSHIP_USE) {
@@ -60,14 +63,17 @@ function generateProperty(property, generateExtraDetails) {
   uml += property.required ? '*' : '';
   uml += constants.colon;
   uml += property.type;
+  if (property.itemType) {
+    uml += `<${property.itemType}>`;
+  }
 
   if (generateExtraDetails) {
-    if (property.type === 'enum') {
+    if (property.isEnum) {
       uml += generateDetails(property.details, true);
-    } else if (property.type === 'date') {
+    } else if (utils.resolveFormat(property.details) === 'date') {
       uml += generateDetails(property.details, false);
       uml += generateDetails([{ name: 'pattern', value: 'yyyy-MM-dd' }], false);
-    } else if (property.type === 'date-time') {
+    } else if (utils.resolveFormat(property.details) === 'date-time') {
       uml += generateDetails(property.details, false);
       uml += generateDetails([{ name: 'pattern', value: 'yyyy-MM-ddTHH:mm:ssZ' }], false);
     } else {
@@ -100,7 +106,7 @@ function generateSchema(schema, generateExtraDetails) {
   uml += constants.lineBreak;
 
   uml += generateRelationShips(schema.relationShips);
-  uml += generateParent(schema.name, schema.parent);
+  uml += generateParents(schema.name, schema.parents);
 
   return uml;
 }
