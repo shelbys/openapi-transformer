@@ -10,7 +10,7 @@ describe('openApiGenerator - test plantUml transformer', () => {
     console.log(" ******************************************")
     console.log(" ******************************************")
     console.log(" ******************************************")
-    const loadedSchemas = await openApiGenerator.loadYamlFile('./test/resources/propertyNoRelationShipNoReferences.yaml', true);
+    const [loadedSchemas] = await openApiGenerator.loadYamlFile('./test/resources/propertyNoRelationShipNoReferences.yaml', true);
     assert.isDefined(loadedSchemas);
 
     const result = plantUmlTransformer.generate(loadedSchemas, true);
@@ -19,7 +19,7 @@ describe('openApiGenerator - test plantUml transformer', () => {
     expect(result).to.deep.equal(expectedResult.toString());
   });
   it('Test with references.', async () => {
-    const loadedSchemas = await openApiGenerator.loadYamlFile('./test/resources/propertyFiveRelationShipThreeReferencesUsingExtension.test.yaml', true);
+    const [loadedSchemas] = await openApiGenerator.loadYamlFile('./test/resources/propertyFiveRelationShipThreeReferencesUsingExtension.test.yaml', true);
     assert.isDefined(loadedSchemas);
 
     const result = plantUmlTransformer.generate(loadedSchemas);

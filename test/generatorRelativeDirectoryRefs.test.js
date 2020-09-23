@@ -10,7 +10,7 @@ function assertRelationShip(relationShip, expectedFrom, expectedTo, expectedDesc
 
 describe('openApiGenerator - loadYamlFile - one relationship - relative directory $ref between files', () => {
   it('Load two schema objects from a parent reference file.', async () => {
-    const loadedSchemas =
+    const [loadedSchemas] =
       await openApiGenerator.loadYamlFile('./test/resources/generatorRelativeDirectoryRefs/parentSchema.yaml', false);
 
     assert.isDefined(loadedSchemas);
@@ -18,7 +18,7 @@ describe('openApiGenerator - loadYamlFile - one relationship - relative director
   });
 
   it('Check relationships: $ref is via relative (double dot) directory path.', async () => {
-    const loadedSchemas =
+    const [loadedSchemas] =
       await openApiGenerator.loadYamlFile('./test/resources/generatorRelativeDirectoryRefs/parentSchema.yaml', false);
 
     assert.isDefined(loadedSchemas);

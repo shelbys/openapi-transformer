@@ -7,6 +7,7 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 const Schema = require('./schema');
+const Resource = require('./resource');
 const utils = require('./utils');
 
 const allLoadedFiles = [];
@@ -43,6 +44,7 @@ async function loadYamlFile(fileOrUrl, verbose) {
 
   if (verbose) console.log(`***************** processing fileOrUrl :: ${fileOrUrl}`);
   const allParsedSchemas = {};
+  const allParsedResources = {};
 
   let loadedFile;
   let basePath;
@@ -80,15 +82,32 @@ async function loadYamlFile(fileOrUrl, verbose) {
 
       if (referencedFiles !== undefined && referencedFiles.length > 0) {
         referencedFiles.forEach(async (referencedFile) => {
-          const referencedParsedSchemas = await loadYamlFile(`${basePath}/${referencedFile}`, verbose);
+          const [referencedParsedSchemas, referencedParsedResources] = await loadYamlFile(`${basePath}/${referencedFile}`, verbose);
 
           utils.mergeObjects(referencedParsedSchemas, allParsedSchemas);
+          utils.mergeObjects(referencedParsedResources, allParsedResources);
+        });
+      }
+    }
+
+    if (myYaml.paths !== undefined) {
+      const { paths } = myYaml;
+      const [referencedFiles, parsedResources] = Resource.parseResources(paths, allParsedSchemas, verbose);
+
+      utils.mergeObjects(parsedResources, allParsedResources);
+
+      if (referencedFiles !== undefined && referencedFiles.length > 0) {
+        referencedFiles.forEach(async (referencedFile) => {
+          const [referencedParsedSchemas, referencedParsedResources] = await loadYamlFile(`${basePath}/${referencedFile}`, verbose);
+
+          utils.mergeObjects(referencedParsedSchemas, allParsedSchemas);
+          utils.mergeObjects(referencedParsedResources, allParsedResources);
         });
       }
     }
   }
   // clean allLoadedFiles (for testing)
   allLoadedFiles.length = 0;
-  return allParsedSchemas;
+  return [allParsedSchemas, allParsedResources];
 }
 module.exports.loadYamlFile = loadYamlFile;
