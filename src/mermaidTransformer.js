@@ -259,7 +259,7 @@ function generateOperations(operations, generateExtraDetails) {
   return mermaid;
 }
 
-function generateSchema(schema, resource, schemas, generateExtraDetails) {
+function generateSchema(schema, resource, schemas, generateExtraDetails, linkPattern) {
   let mermaid = '\n';
   mermaid += `  class ${schema.name}{\n`;
   mermaid += `    ${resource ? '<<Resource>>' : '<<Schema>>'}\n`;
@@ -283,10 +283,15 @@ function generateSchema(schema, resource, schemas, generateExtraDetails) {
   }
   mermaid += generateParents(schema.name, schema.parents);
 
+  if (linkPattern) {
+    const link = linkPattern.replace('{NAME}', schema.name);
+    mermaid += `  link ${schema.name} "${link}" "Go to Portal for ${schema.name}"\n`;
+  }
+
   return mermaid;
 }
 
-function generateResource(resource, generateExtraDetails) {
+function generateResource(resource, generateExtraDetails, linkPattern) {
   let mermaid = '\n';
   mermaid += `  class ${resource.name}{\n`;
   mermaid += '    <<Resource>>\n';
@@ -296,20 +301,25 @@ function generateResource(resource, generateExtraDetails) {
 
   mermaid += generateRelationShips(resource.relationShips);
 
+  if (linkPattern) {
+    const link = linkPattern.replace('{NAME}', resource.name);
+    mermaid += `  link ${resource.name} "${link}" "Go to Portal for ${resource.name}"\n`;
+  }
+
   return mermaid;
 }
 
-function generate(schemas, resources, generateExtraDetails) {
+function generate(schemas, resources, generateExtraDetails, linkPattern) {
   let mermaid = 'classDiagram';
   // eslint-disable-next-line no-restricted-syntax
   for (const [schemaKey, schema] of Object.entries(schemas)) {
     const resourceKey = schemaKey.charAt(0).toUpperCase() + schemaKey.substr(1);
-    mermaid += generateSchema(schema, resources[schemaKey] || resources[resourceKey], schemas, generateExtraDetails);
+    mermaid += generateSchema(schema, resources[schemaKey] || resources[resourceKey], schemas, generateExtraDetails, linkPattern);
   }
 
   for (const [resourceKey, resource] of Object.entries(resources)) {
     if (!schemas[resourceKey] && !schemas[resourceKey.toLowerCase()]) {
-      mermaid += generateResource(resource, generateExtraDetails);
+      mermaid += generateResource(resource, generateExtraDetails, linkPattern);
     }
   }
   return mermaid;

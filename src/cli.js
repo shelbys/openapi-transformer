@@ -19,6 +19,7 @@ program
   .option('-m, --markdown <markdown file>', 'Transform to markdown')
   .option('-e, --mermaid <mermaid file>', 'Transform to mermaid')
   .option('-j, --jsonschema <jsonschema file>', 'Transform to json schema')
+  .option('-l, --link <url>', 'Pattern for link to portal, `{NAME}` will be replaced with Model or Resource name')
   .option('-v, --verbose', 'Show verbose debug output')
   .parse(process.argv);
 
@@ -51,7 +52,7 @@ if (!program.args.length || (program.plantuml == null && program.markdown == nul
     if (program.mermaid !== undefined) {
       if (verbose) console.log('Writing mermaid...');
       const includeDetails = (program.details !== undefined);
-      const mermaid = mermaidTransformer.generate(allParsedSchemas, allParsedResources, includeDetails);
+      const mermaid = mermaidTransformer.generate(allParsedSchemas, allParsedResources, includeDetails, program.link);
       fs.writeFileSync(program.mermaid, mermaid, 'utf8');
     }
 
