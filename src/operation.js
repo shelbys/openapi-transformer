@@ -7,12 +7,14 @@ const Response = require('./response');
 const utils = require('./utils');
 
 class Operation {
-  constructor(path, method, deprecated, parameters, responses) {
+  constructor(path, method, operationId, deprecated, parameters, responses, tags) {
     this.path = path;
     this.method = method;
+    this.operationId = operationId;
     this.deprecated = deprecated;
     this.parameters = parameters;
     this.responses = responses;
+    this.tags = tags;
   }
 
   static parseOperations(path, methods, topLevelParams, verbose) {
@@ -44,7 +46,7 @@ class Operation {
         utils.processReferences(referencedFiles2, allReferencedFiles, verbose);
         utils.mergeObjects(parsedSchemas2, allParsedSchemas);
 
-        allParsedOperations.push(new Operation(path, methodKey, operation.deprecated, params, parsedResponses));
+        allParsedOperations.push(new Operation(path, methodKey, operation.operationId, operation.deprecated, params, parsedResponses, operation.tags));
       }
     }
     return [allReferencedFiles, allParsedOperations];

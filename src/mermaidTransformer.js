@@ -254,12 +254,69 @@ function generateOperations(operations, generateExtraDetails) {
       }
     }
     const path = operation.path.replace(/\{([^}]+)\}/g, ':$1');
-    mermaid += `    +${operation.deprecated ? 'DEPRECATED_' : ''}${operation.method.toUpperCase()}_${path.replace(/[/:]/g, '_')}(${params}) ${result}\n`;
+    mermaid += `    +${operation.deprecated ? 'DEPRECATED_' : ''}${operation.method.toUpperCase()}_${path.replace(/[/:]/g, '_')}(${params})${result ? ' ' + result : ''}\n`;
   }
   return mermaid;
 }
 
-function generateSchema(schema, resource, schemas, generateExtraDetails, linkPattern) {
+const METHOD_PRIORITY = {
+  GET: 1,
+  PATCH: 2,
+  PUT: 3,
+  POST: 4,
+  DELETE: 5,
+  HEAD: 6,
+  OPTIONS: 7,
+  TRACE: 8,
+};
+
+function generateLink(schema, resource, linkOperation, linkSchema) {
+  let result = '';
+  if (linkOperation && resource) {
+    const sortedOperations = [...resource.operations];
+    // Sort by not deprecated first, then METHOD_PRIORITY ascending, then path length ascending
+    sortedOperations.sort((a, b) => {
+      let order = Number(a.deprecated || false) - Number(b.deprecated || false);
+      if (order === 0) {
+        order = (METHOD_PRIORITY[a.method.toUpperCase()] || METHOD_PRIORITY.length + 1) - (METHOD_PRIORITY[b.method.toUpperCase()] || METHOD_PRIORITY.length + 1);
+        if (order === 0) {
+          order = a.path.length - b.path.length;
+        }
+      }
+      return order;
+    });
+
+    const operation = sortedOperations[0];
+    let link = linkOperation.replace('{RESOURCE}', resource.name);
+    link = link.replace('{METHOD}', operation.method);
+    link = link.replace('{PATH}', operation.path);
+    link = link.replace('{ID}', operation.operationId);
+    let anchorRedoc;
+    if (operation.operationId) {
+      anchorRedoc = `#operation/${operation.operationId}`;
+    } else if (operation.tags && operation.tags.length > 0) {
+      anchorRedoc = `#tag/${operation.tags[0].replace(/ /g, '-')}/paths/${operation.path.replace(/\//g, '~1')}/${operation.method}`;
+    } else {
+      anchorRedoc = `#/paths/${operation.path.replace(/\//g, '~1')}/${operation.method}`;
+    }
+    link = link.replace('{REDOC}', anchorRedoc);
+    let anchorSwagger;
+    const tag = (operation.tags || ['default'])[0];
+    if (operation.operationId) {
+      anchorSwagger = `#operations-${encodeURIComponent(tag)}-${operation.operationId}`;
+    } else {
+      anchorSwagger = `#operations-${encodeURIComponent(tag)}-${operation.method}${operation.path.replace(/[/{}]/g, '_')}`;
+    }
+    link = link.replace('{SWAGGER}', anchorSwagger);
+    result = `  link ${resource.name} "${link}" "Go to Portal for ${resource.name}"\n`;
+  } else if (linkSchema && schema) {
+    const link = linkSchema.replace('{NAME}', schema.name);
+    result = `  link ${schema.name} "${link}" "Go to Portal for ${schema.name}"\n`;
+  }
+  return result;
+}
+
+function generateSchema(schema, resource, schemas, generateExtraDetails, linkOperation, linkSchema) {
   let mermaid = '\n';
   mermaid += `  class ${schema.name}{\n`;
   mermaid += `    ${resource ? '<<Resource>>' : '<<Schema>>'}\n`;
@@ -283,15 +340,12 @@ function generateSchema(schema, resource, schemas, generateExtraDetails, linkPat
   }
   mermaid += generateParents(schema.name, schema.parents);
 
-  if (linkPattern) {
-    const link = linkPattern.replace('{NAME}', schema.name);
-    mermaid += `  link ${schema.name} "${link}" "Go to Portal for ${schema.name}"\n`;
-  }
+  mermaid += generateLink(schema, resource, linkOperation, linkSchema);
 
   return mermaid;
 }
 
-function generateResource(resource, generateExtraDetails, linkPattern) {
+function generateResource(resource, generateExtraDetails, linkOperation) {
   let mermaid = '\n';
   mermaid += `  class ${resource.name}{\n`;
   mermaid += '    <<Resource>>\n';
@@ -301,25 +355,22 @@ function generateResource(resource, generateExtraDetails, linkPattern) {
 
   mermaid += generateRelationShips(resource.relationShips);
 
-  if (linkPattern) {
-    const link = linkPattern.replace('{NAME}', resource.name);
-    mermaid += `  link ${resource.name} "${link}" "Go to Portal for ${resource.name}"\n`;
-  }
+  mermaid += generateLink(null, resource, linkOperation, null);
 
   return mermaid;
 }
 
-function generate(schemas, resources, generateExtraDetails, linkPattern) {
+function generate(schemas, resources, generateExtraDetails, linkOperation, linkSchema) {
   let mermaid = 'classDiagram';
   // eslint-disable-next-line no-restricted-syntax
   for (const [schemaKey, schema] of Object.entries(schemas)) {
     const resourceKey = schemaKey.charAt(0).toUpperCase() + schemaKey.substr(1);
-    mermaid += generateSchema(schema, resources[schemaKey] || resources[resourceKey], schemas, generateExtraDetails, linkPattern);
+    mermaid += generateSchema(schema, resources[schemaKey] || resources[resourceKey], schemas, generateExtraDetails, linkOperation, linkSchema);
   }
 
   for (const [resourceKey, resource] of Object.entries(resources)) {
     if (!schemas[resourceKey] && !schemas[resourceKey.toLowerCase()]) {
-      mermaid += generateResource(resource, generateExtraDetails, linkPattern);
+      mermaid += generateResource(resource, generateExtraDetails, linkOperation);
     }
   }
   return mermaid;

@@ -20,9 +20,13 @@ classDiagram
   }
   owner "0" o-- "*" User : userId
   Owner "1" <-- "0..*" owner : 200 GET /owners
+  link Owner "http://example.com#operation/getOwners" "Go to Portal for Owner"
 
   class User{
     <<Resource>>
+    +GET__users__userId_detail() string
     +GET__users__userId() string
   }
+  User "1" <-- "1" string : 200 GET /users/{userId}/detail
   User "1" <-- "1" string : 200 GET /users/{userId}
+  link User "http://example.com#tag/test/paths/~1users~1{userId}/get" "Go to Portal for User"

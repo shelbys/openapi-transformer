@@ -13,7 +13,7 @@ describe('openApiGenerator - test mermaid transformer', () => {
     const [loadedSchemas, loadedResources] = await openApiGenerator.loadYamlFile('./test/resources/propertyNoRelationShipNoReferences.yaml', true);
     assert.isDefined(loadedSchemas);
 
-    const result = mermaidTransformer.generate(loadedSchemas, loadedResources, true);
+    const result = mermaidTransformer.generate(loadedSchemas, loadedResources, true, 'http://example.com{REDOC}', 'http://example.com#model-{NAME}');
     const expectedResult = fs.readFileSync('./test/resources/expectedResultMermaidPropertyNoRelationShipNoReferences.mmd');
 
     expect(result).to.deep.equal(expectedResult.toString());
@@ -22,7 +22,7 @@ describe('openApiGenerator - test mermaid transformer', () => {
     const [loadedSchemas, loadedResources] = await openApiGenerator.loadYamlFile('./test/resources/propertyFiveRelationShipThreeReferencesUsingExtension.test.yaml', true);
     assert.isDefined(loadedSchemas);
 
-    const result = mermaidTransformer.generate(loadedSchemas, loadedResources, true);
+    const result = mermaidTransformer.generate(loadedSchemas, loadedResources, true, 'http://example.com{SWAGGER}', 'http://example.com#tag/model-{NAME}');
     const expectedResult = fs.readFileSync('./test/resources/expectedPropertyFiveRelationShipThreeReferencesUsingExtension.mmd');
 
     console.log('======== result: ' + result);

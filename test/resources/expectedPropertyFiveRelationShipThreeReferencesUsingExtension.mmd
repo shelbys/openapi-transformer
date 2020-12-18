@@ -9,29 +9,35 @@ classDiagram
   owner "0" *-- "*" father : family
   owner "0" *-- "*" mother : family
   owner "0" *-- "*" child : family
+  link owner "http://example.com#tag/model-owner" "Go to Portal for owner"
 
   class partner{
     <<Schema>>
     +string name
   }
+  link partner "http://example.com#tag/model-partner" "Go to Portal for partner"
 
   class child{
     <<Schema>>
     +string[..30] name*
   }
+  link child "http://example.com#tag/model-child" "Go to Portal for child"
 
   class parent{
     <<Schema>>
     +string[..30] name*
   }
+  link parent "http://example.com#tag/model-parent" "Go to Portal for parent"
 
   class father{
     <<Schema>>
     +integer age
   }
   parent <|-- father : extends
+  link father "http://example.com#tag/model-father" "Go to Portal for father"
 
   class mother{
     <<Schema>>
   }
   parent <|-- mother : extends
+  link mother "http://example.com#tag/model-mother" "Go to Portal for mother"

@@ -19,7 +19,15 @@ program
   .option('-m, --markdown <markdown file>', 'Transform to markdown')
   .option('-e, --mermaid <mermaid file>', 'Transform to mermaid')
   .option('-j, --jsonschema <jsonschema file>', 'Transform to json schema')
-  .option('-l, --link <url>', 'Pattern for link to portal, `{NAME}` will be replaced with Model or Resource name')
+  .option('-o, --linkoperation <url>', 'Pattern for link to operation in portal'
+    + ', `{RESOURCE}` will be replaced with Resource.name'
+    + ', `{METHOD}` will be replaced with Operation.method'
+    + ', `{PATH}` will be replaced with Operation.path'
+    + ', `{ID}` will be replaced with Operation.operationId'
+    + ', `{REDOC}` will be replaced with a ReDoc style anchor'
+    + ', `{SWAGGER}` will be replaced with SwaggerUI style anchor')
+  .option('-s, --linkschema <url>', 'Pattern for link to schema in portal'
+    + ', `{NAME}` will be replaced with Schema.name')
   .option('-v, --verbose', 'Show verbose debug output')
   .parse(process.argv);
 
@@ -52,7 +60,7 @@ if (!program.args.length || (program.plantuml == null && program.markdown == nul
     if (program.mermaid !== undefined) {
       if (verbose) console.log('Writing mermaid...');
       const includeDetails = (program.details !== undefined);
-      const mermaid = mermaidTransformer.generate(allParsedSchemas, allParsedResources, includeDetails, program.link);
+      const mermaid = mermaidTransformer.generate(allParsedSchemas, allParsedResources, includeDetails, program.linkoperation, program.linkschema);
       fs.writeFileSync(program.mermaid, mermaid, 'utf8');
     }
 
