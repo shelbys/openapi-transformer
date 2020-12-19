@@ -287,10 +287,10 @@ function generateLink(schema, resource, linkOperation, linkSchema) {
     });
 
     const operation = sortedOperations[0];
-    let link = linkOperation.replace('{RESOURCE}', resource.name);
-    link = link.replace('{METHOD}', operation.method);
-    link = link.replace('{PATH}', operation.path);
-    link = link.replace('{ID}', operation.operationId);
+    let link = linkOperation.replace(/\{RESOURCE\}/g, resource.name);
+    link = link.replace(/\{METHOD\}/g, operation.method);
+    link = link.replace(/\{PATH\}/g, operation.path);
+    link = link.replace(/\{ID\}/g, operation.operationId);
     let anchorRedoc;
     if (operation.operationId) {
       anchorRedoc = `#operation/${operation.operationId}`;
@@ -299,7 +299,7 @@ function generateLink(schema, resource, linkOperation, linkSchema) {
     } else {
       anchorRedoc = `#/paths/${operation.path.replace(/\//g, '~1')}/${operation.method}`;
     }
-    link = link.replace('{REDOC}', anchorRedoc);
+    link = link.replace(/\{REDOC\}/g, anchorRedoc);
     let anchorSwagger;
     const tag = (operation.tags || ['default'])[0];
     if (operation.operationId) {
@@ -307,10 +307,10 @@ function generateLink(schema, resource, linkOperation, linkSchema) {
     } else {
       anchorSwagger = `#operations-${encodeURIComponent(tag)}-${operation.method}${operation.path.replace(/[/{}]/g, '_')}`;
     }
-    link = link.replace('{SWAGGER}', anchorSwagger);
+    link = link.replace(/\{SWAGGER\}/g, anchorSwagger);
     result = `  link ${resource.name} "${link}" "Go to Portal for ${resource.name}"\n`;
   } else if (linkSchema && schema) {
-    const link = linkSchema.replace('{NAME}', schema.name);
+    const link = linkSchema.replace(/\{NAME\}/g, schema.name);
     result = `  link ${schema.name} "${link}" "Go to Portal for ${schema.name}"\n`;
   }
   return result;
