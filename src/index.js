@@ -36,7 +36,8 @@ async function loadUrl(url) {
   });
 }
 
-async function loadYamlFile(fileOrUrl, verbose) {
+async function loadYamlFile(rawFileOrUrl, verbose) {
+  let fileOrUrl = rawFileOrUrl.startsWith('http') ? rawFileOrUrl : path.resolve(rawFileOrUrl);
   if (allLoadedFiles.includes(fileOrUrl)) {
     if (verbose) console.log(`@@@@@@@@@@@@@@@@ already loaded :: ${fileOrUrl}; skipping`);
     return [];
