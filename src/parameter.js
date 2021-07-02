@@ -59,20 +59,24 @@ class Parameter {
       if (verbose) console.log('\n\n############################### requestBody ###############################');
 
       const { content } = requestBody;
-      for (const mime of Object.values(content)) {
-        const [referencedFiles, parsedSchemas] = Schema.parseSchemas([mime.schema], verbose);
-        utils.processReferences(referencedFiles, allReferencedFiles, verbose);
-        utils.mergeObjects(parsedSchemas, allParsedSchemas);
+      if (requestBody.$ref) {
+        allParsedParameters.body = new Parameter('body', requestBody.required, 'body', requestBody.deprecated, requestBody.description, requestBody.$ref, null, {});
+      } else {
+        for (const mime of Object.values(content)) {
+          const [referencedFiles, parsedSchemas] = Schema.parseSchemas([mime.schema], verbose);
+          utils.processReferences(referencedFiles, allReferencedFiles, verbose);
+          utils.mergeObjects(parsedSchemas, allParsedSchemas);
 
-        let { type } = (mime.schema || {});
-        let itemType = ((mime.schema || {}).items || {}).type;
-        if (!type && mime.schema && mime.schema.$ref) {
-          type = mime.schema.$ref.replace(/.*\//g, '');
+          let { type } = (mime.schema || {});
+          let itemType = ((mime.schema || {}).items || {}).type;
+          if (!type && mime.schema && mime.schema.$ref) {
+            type = mime.schema.$ref.replace(/.*\//g, '');
+          }
+          if (!itemType && mime.schema && mime.schema.items && mime.schema.items.$ref) {
+            itemType = mime.schema.items.$ref.replace(/.*\//g, '');
+          }
+          allParsedParameters.body = new Parameter('body', requestBody.required, 'body', requestBody.deprecated, requestBody.description, type, itemType, parsedSchemas);
         }
-        if (!itemType && mime.schema && mime.schema.items && mime.schema.items.$ref) {
-          itemType = mime.schema.items.$ref.replace(/.*\//g, '');
-        }
-        allParsedParameters.body = new Parameter('body', requestBody.required, 'body', requestBody.deprecated, requestBody.description, type, itemType, parsedSchemas);
       }
     }
     return [allReferencedFiles, allParsedParameters, allParsedSchemas];
