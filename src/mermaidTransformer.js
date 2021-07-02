@@ -1,10 +1,23 @@
 const { constants } = require('./constants');
 const Property = require('./property');
 
+function sanitize(name) {
+  if (!name) {
+    return name;
+  }
+
+  let newName = name.replace(/[(){}]/g, '');
+  if (/-/.test(newName)) {
+    return '`' + newName + '`';
+  } else {
+    return newName;
+  }
+}
+
 function generateParents(schemaName, parents) {
   let mermaid = '';
   for (const parent of (parents || [])) {
-    mermaid += `  ${parent} <|-- ${schemaName} : extends`;
+    mermaid += `  ${sanitize(parent)} <|-- ${sanitize(schemaName)} : extends`;
     mermaid += '\n';
   }
   return mermaid;
@@ -38,7 +51,7 @@ function generateRelationShips(relationShips) {
       if (relationShip.toCard) {
         toCard = ` "${relationShip.toCard}"`;
       }
-      mermaid += `  ${relationShip.from} ${fromCard}${type}${toCard} ${relationShip.to} : ${relationShip.description}\n`;
+      mermaid += `  ${sanitize(relationShip.from)} ${fromCard}${type}${toCard} ${sanitize(relationShip.to)} : ${relationShip.description}\n`;
     });
   }
   return mermaid;
@@ -127,7 +140,7 @@ function generateProperty(sourceProperty, schemas, generateExtraDetails) {
           if (enums.length > 0) {
             enums += ',';
           }
-          enums += detail.value;
+          enums += sanitize(detail.value);
           break;
         case 'format':
           format = `~${detail.value}~`;
@@ -287,7 +300,7 @@ function generateLink(schema, resource, linkOperation, linkSchema) {
     });
 
     const operation = sortedOperations[0];
-    let link = linkOperation.replace(/\{RESOURCE\}/g, resource.name);
+    let link = linkOperation.replace(/\{RESOURCE\}/g, sanitize(resource.name));
     link = link.replace(/\{METHOD\}/g, operation.method);
     link = link.replace(/\{PATH\}/g, operation.path);
     link = link.replace(/\{ID\}/g, operation.operationId);
@@ -308,17 +321,17 @@ function generateLink(schema, resource, linkOperation, linkSchema) {
       anchorSwagger = `#operations-${encodeURIComponent(tag)}-${operation.method}${operation.path.replace(/[/{}]/g, '_')}`;
     }
     link = link.replace(/\{SWAGGER\}/g, anchorSwagger);
-    result = `  link ${resource.name} "${link}" "Go to Portal for ${resource.name}"\n`;
+    result = `  link ${sanitize(resource.name)} "${link}" "Go to Portal for ${resource.name}"\n`;
   } else if (linkSchema && schema) {
     const link = linkSchema.replace(/\{NAME\}/g, schema.name);
-    result = `  link ${schema.name} "${link}" "Go to Portal for ${schema.name}"\n`;
+    result = `  link ${sanitize(schema.name)} "${link}" "Go to Portal for ${schema.name}"\n`;
   }
   return result;
 }
 
 function generateSchema(schema, resource, schemas, generateExtraDetails, linkOperation, linkSchema) {
   let mermaid = '\n';
-  mermaid += `  class ${schema.name}{\n`;
+  mermaid += `  class ${sanitize(schema.name)}{\n`;
   mermaid += `    ${resource ? '<<Resource>>' : '<<Schema>>'}\n`;
 
   if (schema.properties !== undefined) {
@@ -347,7 +360,7 @@ function generateSchema(schema, resource, schemas, generateExtraDetails, linkOpe
 
 function generateResource(resource, generateExtraDetails, linkOperation) {
   let mermaid = '\n';
-  mermaid += `  class ${resource.name}{\n`;
+  mermaid += `  class ${sanitize(resource.name)}{\n`;
   mermaid += '    <<Resource>>\n';
   mermaid += generateOperations(resource.operations, generateExtraDetails);
   mermaid += '  }';
