@@ -1,13 +1,13 @@
 const { constants } = require('./constants');
 const Property = require('./property');
 
-function sanitize(name) {
+function sanitize(name, forEnum = false) {
   if (!name) {
     return name;
   }
 
   let newName = name.replace(/[(){}]/g, '');
-  if (/-/.test(newName)) {
+  if (!forEnum && /-/.test(newName)) {
     return '`' + newName + '`';
   } else {
     return newName;
@@ -140,7 +140,7 @@ function generateProperty(sourceProperty, schemas, generateExtraDetails) {
           if (enums.length > 0) {
             enums += ',';
           }
-          enums += sanitize(detail.value);
+          enums += sanitize(detail.value, true);
           break;
         case 'format':
           format = `~${detail.value}~`;
